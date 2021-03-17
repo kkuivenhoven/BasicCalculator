@@ -15,6 +15,7 @@
 #include <QRegExp>
 #include <QtMath>
 #include <QChar>
+#include <QDebug>
 
 class MyCustomWidget : public QWidget
 {

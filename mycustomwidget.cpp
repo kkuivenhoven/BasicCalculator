@@ -124,12 +124,22 @@ void MyCustomWidget::decimalButtonClicked() {
     while((_stack.top() != "+") && (_stack.top() != "-")
           && (_stack.top() != "*") && (_stack.top() != "/")
           && (_stack.top() != ")") && (_stack.top() != "(")) {
-        number += _stack.pop();
-        currentText.remove((currentText.length() - 1), 1);
+        // number += _stack.pop();
+        QString popped = _stack.pop();
+        qDebug() << (" decimal popped: " + popped);
+        number += popped;
+        // currentText.remove((currentText.length() - number.length()), 1);
         if(_stack.empty()) {
             break;
         }
     }
+    currentText.remove((currentText.length() - number.length()), number.length());
+    // qDebug() << (" decimal number: " + number);
+    // QRegExp detectOperator("([+-/*]{1})");
+    // int opPos = currentText.indexOf(detectOperator, 0);
+    // qDebug() << (" currentText : " + currentText);
+    // currentText.remove(opPos+1, (currentText.length()-(opPos+1)));
+    // qDebug() << (" currentText : " + currentText);
     if(number != "") {
         number += ".";
         _stack.push(number);
@@ -189,11 +199,13 @@ void MyCustomWidget::_addMultipleDigits(QString numOp) {
           && (_stack.top() != "*") && (_stack.top() != "/")
           && (_stack.top() != ")") && (_stack.top() != "(")) {
         number += _stack.pop();
-        currentText.remove((currentText.length() - 1), 1);
         if(_stack.empty()) {
             break;
         }
     }
+
+    currentText.remove((currentText.length() - number.length()), number.length());
+
     QRegExp rx("(.[0-9]+)");
     if(rx.exactMatch(number)) {
         std::reverse(number.begin(), number.end());
@@ -202,9 +214,6 @@ void MyCustomWidget::_addMultipleDigits(QString numOp) {
         _concatenateNumbersOperations(numOp);
     }
     if(number != "") {
-        if(number.contains(".")) {
-            currentText.remove((currentText.length() - 1), 1);
-        }
         number += numOp;
         _stack.push(number);
         currentText.append(number);
@@ -300,7 +309,6 @@ QStringList MyCustomWidget::_convertToPostFix(QStringList numberOperands) {
         return postFix;
     }
 }
-
 
 float MyCustomWidget::_evaluatePostFix(QStringList expression) {
     QStack<float> evalStack;
