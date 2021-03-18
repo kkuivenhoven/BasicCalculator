@@ -31,6 +31,13 @@ class MyCustomWidget : public QWidget
     void _concatenateNumbersOperations(QString operationOrNumber);
     void _addMultipleDigits(QString numOp);
 
+    QWidget *_basicCalc;
+    QWidget *_scientificCalc;
+    QGridLayout *_gridLayout;
+
+    // https://stackoverflow.com/questions/20382050/how-to-insert-specific-symbols-in-qt-widgets
+    // const QChar _squareRootSymbol(0x221A);
+
 public:
     MyCustomWidget(QWidget *parent = 0);
 
@@ -55,6 +62,12 @@ private slots:
     void eightButtonClicked();
     void nineButtonClicked();
     void zeroButtonClicked();
+
+    void scientificButtonClicked();
+    void sineButtonClicked();
+    void cosineButtonClicked();
+    void tangentButtonClicked();
+    void squareRootButtonClicked();
 };
 
 #endif // MYCUSTOMWIDGET_H
