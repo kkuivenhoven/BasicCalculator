@@ -9,13 +9,11 @@
 // https://www.mathopenref.com/calcinstructions.html
 
 MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
-    // QWidget *window = new QWidget();
-    _basicCalc = new QWidget();
+    _basicCalcWindow = new QWidget();
 
     _lineEdit = new QLineEdit();
     _lineEdit->setDisabled(true);
 
-    // QGridLayout *gridLayout = new QGridLayout();
     _gridLayout = new QGridLayout();
     QPushButton *oneButton = new QPushButton("1");
     QPushButton *twoButton = new QPushButton("2");
@@ -40,7 +38,8 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
     QPushButton *clearButton = new QPushButton("Clear");
     QPushButton *decimalButton = new QPushButton(".");
     QPushButton *equalButton = new QPushButton("=");
-    QPushButton *scientificButton = new QPushButton("Sci");
+    // QPushButton *scientificButton = new QPushButton("Sci");
+    _scientificButton = new QPushButton("Sci");
 
     _gridLayout->addWidget(_lineEdit,0,0,1,4);
 
@@ -83,17 +82,19 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 
     _gridLayout->addWidget(clearButton,5,0,1,1);
     _gridLayout->addWidget(decimalButton,5,1,1,1);
-    _gridLayout->addWidget(scientificButton,5,2,1,1);
+    _gridLayout->addWidget(_scientificButton,5,2,1,1);
     _gridLayout->addWidget(equalButton,5,3,1,1);
     QObject::connect(clearButton, SIGNAL(clicked(bool)), this, SLOT(clearButtonClicked()));
     QObject::connect(decimalButton, SIGNAL(clicked(bool)), this, SLOT(decimalButtonClicked()));
-    QObject::connect(scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
+    QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
     QObject::connect(equalButton, SIGNAL(clicked(bool)), this, SLOT(equalButtonClicked()));
 
-    // window->setLayout(gridLayout);
-    // window->show();
-    _basicCalc->setLayout(_gridLayout);
-    _basicCalc->show();
+    _basicCalcWindow->setLayout(_gridLayout);
+    _basicCalcWindow->show();
+    _calcSize = _basicCalcWindow->size();
+    _height = _calcSize.height();
+    _width = _calcSize.width();
+    _firstSciCallOccurred = false;
 }
 
 void MyCustomWidget::leftParenBtnClicked() {
@@ -134,7 +135,6 @@ void MyCustomWidget::decimalButtonClicked() {
           && (_stack.top() != ")") && (_stack.top() != "(")) {
         // number += _stack.pop();
         QString popped = _stack.pop();
-        qDebug() << (" decimal popped: " + popped);
         number += popped;
         // currentText.remove((currentText.length() - number.length()), 1);
         if(_stack.empty()) {
@@ -142,12 +142,7 @@ void MyCustomWidget::decimalButtonClicked() {
         }
     }
     currentText.remove((currentText.length() - number.length()), number.length());
-    // qDebug() << (" decimal number: " + number);
-    // QRegExp detectOperator("([+-/*]{1})");
-    // int opPos = currentText.indexOf(detectOperator, 0);
-    // qDebug() << (" currentText : " + currentText);
-    // currentText.remove(opPos+1, (currentText.length()-(opPos+1)));
-    // qDebug() << (" currentText : " + currentText);
+
     if(number != "") {
         number += ".";
         _stack.push(number);
@@ -205,7 +200,8 @@ void MyCustomWidget::_addMultipleDigits(QString numOp) {
     QString currentText = _lineEdit->text();
     while((_stack.top() != "+") && (_stack.top() != "-")
           && (_stack.top() != "*") && (_stack.top() != "/")
-          && (_stack.top() != ")") && (_stack.top() != "(")) {
+          && (_stack.top() != ")") && (_stack.top() != "(")
+          && (_stack.top() != "^")) {
         number += _stack.pop();
         if(_stack.empty()) {
             break;
@@ -215,7 +211,7 @@ void MyCustomWidget::_addMultipleDigits(QString numOp) {
     currentText.remove((currentText.length() - number.length()), number.length());
 
     QRegExp rx("([\.]{1}[0-9]+)");
-    if(rx.exactMatch(number)) {
+    if((rx.exactMatch(number)) || (number.contains("^"))) {
         std::reverse(number.begin(), number.end());
     }
     if(number == "") {
@@ -256,11 +252,15 @@ void MyCustomWidget::equalButtonClicked() {
     std::reverse(displayThis.begin(), displayThis.end());
     QStringList postFix = _convertToPostFix(numbersOperands);
 
-    if(postFix.at(0) == "ERROR") {
-        _lineEdit->setText("ERROR");
+    if(!postFix.empty()) {
+        if(postFix.at(0) == "ERROR") {
+            _lineEdit->setText("ERROR");
+        } else {
+            float finalResult = _evaluatePostFix(postFix);
+            _lineEdit->setText(QString::number(finalResult));
+        }
     } else {
-        float finalResult = _evaluatePostFix(postFix);
-        _lineEdit->setText(QString::number(finalResult));
+        _lineEdit->setText(" postFix empty");
     }
 }
 
@@ -289,9 +289,9 @@ QStringList MyCustomWidget::_convertToPostFix(QStringList numberOperands) {
                 rightParenCount += 1;
             }
         }
-        // if((numOp == "+") || (numOp == "-") || (numOp == "/") || (numOp == "*")) {
         if((numOp == "+") || (numOp == "-") || (numOp == "/") || (numOp == "*") || (numOp == "sin")
-                || (numOp == "cos") || (numOp == "tan") || (numOp == "√")) {
+                || (numOp == "cos") || (numOp == "tan") || (numOp == "√") || (numOp == "sin-1") ||
+                (numOp == "cos-1") || (numOp == "tan-1") || (numOp == "^")) {
             if((stackPostFix.empty()) || (stackPostFix.top() == "(")) {
                 stackPostFix.push(numOp);
             }
@@ -346,7 +346,9 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
             }
             evalStack.push(result);
         }
-        if((numOp == "sin") || (numOp == "cos") || (numOp == "tan") || (numOp == "√")) {
+        if((numOp == "sin") || (numOp == "cos") || (numOp == "tan") || (numOp == "√") ||
+                (numOp == "sin-1") || (numOp == "cos-1") || (numOp == "tan-1") ||
+                (numOp == "^")) {
             float result;
             float A = evalStack.pop();
             if(numOp == "sin") {
@@ -361,6 +363,19 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
             if(numOp == "√") {
                 result = (qSqrt(A));
             }
+            if(numOp == "sin-1") {
+                result = (qAsin(A));
+            }
+            if(numOp == "cos-1") {
+                result = (qAcos(A));
+            }
+            if(numOp == "tan-1") {
+                result = (qAtan(A));
+            }
+            if(numOp == "^") {
+                float B = evalStack.pop();
+                result = (qPow(B, A));
+            }
             evalStack.push(result);
         }
     }
@@ -369,19 +384,87 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
 }
 
 void MyCustomWidget::scientificButtonClicked() {
-    QPushButton *sineButton = new QPushButton("sin");
-    QPushButton *cosineButton = new QPushButton("cos");
-    QPushButton *tangentButton = new QPushButton("tan");
-    QPushButton *squareRoot = new QPushButton("√");
+    _sineButton = new QPushButton("sin");
+    _cosineButton = new QPushButton("cos");
+    _tangentButton = new QPushButton("tan");
+    _squareRoot = new QPushButton("√");
+    _arcSinButton = new QPushButton("sin -1");
+    _arcCosButton = new QPushButton("cos -1");
+    _arcTanButton = new QPushButton("tan -1");
+    _powButton = new QPushButton("^");
 
-    _gridLayout->addWidget(sineButton,6,0,1,1);
-    _gridLayout->addWidget(cosineButton,6,1,1,1);
-    _gridLayout->addWidget(tangentButton,6,2,1,1);
-    _gridLayout->addWidget(squareRoot,6,3,1,1);
-    QObject::connect(sineButton, SIGNAL(clicked(bool)), this, SLOT(sineButtonClicked()));
-    QObject::connect(cosineButton, SIGNAL(clicked(bool)), this, SLOT(cosineButtonClicked()));
-    QObject::connect(tangentButton, SIGNAL(clicked(bool)), this, SLOT(tangentButtonClicked()));
-    QObject::connect(squareRoot, SIGNAL(clicked(bool)), this, SLOT(squareRootButtonClicked()));
+    _gridLayout->addWidget(_sineButton,6,0,1,1);
+    _gridLayout->addWidget(_cosineButton,6,1,1,1);
+    _gridLayout->addWidget(_tangentButton,6,2,1,1);
+    _gridLayout->addWidget(_squareRoot,6,3,1,1);
+    QObject::connect(_sineButton, SIGNAL(clicked(bool)), this, SLOT(sineButtonClicked()));
+    QObject::connect(_cosineButton, SIGNAL(clicked(bool)), this, SLOT(cosineButtonClicked()));
+    QObject::connect(_tangentButton, SIGNAL(clicked(bool)), this, SLOT(tangentButtonClicked()));
+    QObject::connect(_squareRoot, SIGNAL(clicked(bool)), this, SLOT(squareRootButtonClicked()));
+
+    _gridLayout->addWidget(_arcSinButton, 7, 0, 1, 1);
+    _gridLayout->addWidget(_arcCosButton, 7, 1, 1, 1);
+    _gridLayout->addWidget(_arcTanButton, 7, 2, 1, 1);
+    _gridLayout->addWidget(_powButton, 7, 3, 1, 1);
+
+    QObject::connect(_arcSinButton, SIGNAL(clicked(bool)), this, SLOT(arcSineButtonClicked()));
+    QObject::connect(_arcCosButton, SIGNAL(clicked(bool)), this, SLOT(arcCosineButtonClicked()));
+    QObject::connect(_arcTanButton, SIGNAL(clicked(bool)), this, SLOT(arcTangentButtonClicked()));
+    QObject::connect(_powButton, SIGNAL(clicked(bool)), this, SLOT(powButtonClicked()));
+
+    _gridLayout->removeWidget(_scientificButton);
+    delete _scientificButton;
+
+    _basicCalcButton = new QPushButton("Basic");
+    _gridLayout->addWidget(_basicCalcButton,5,2,1,1);
+    QObject::connect(_basicCalcButton, SIGNAL(clicked(bool)), this, SLOT(returnToBasicCalcClicked()));
+    /* if(_firstSciCallOccurred == false) {
+        _sciHeight = _basicCalcWindow->height();
+        _sciWidth = _basicCalcWindow->width();
+        _basicCalcWindow->setFixedHeight(_sciHeight);
+        _basicCalcWindow->setFixedWidth(_sciWidth);
+        _firstSciCallOccurred = true;
+    }
+    if(_firstSciCallOccurred == true) {
+        // _basicCalcWindow->setFixedHeight(_sciHeight);
+        // _basicCalcWindow->setFixedWidth(_sciWidth);
+        // _basicCalcWindow->height(_sciHeight);
+        // _basicCalcWindow->setFixedWidth(_sciWidth);
+    } */
+}
+
+void MyCustomWidget::returnToBasicCalcClicked() {
+    _gridLayout->removeWidget(_sineButton);
+    _gridLayout->removeWidget(_cosineButton);
+    _gridLayout->removeWidget(_tangentButton);
+    _gridLayout->removeWidget(_squareRoot);
+    _gridLayout->removeWidget(_basicCalcButton);
+    _gridLayout->removeWidget(_arcCosButton);
+    _gridLayout->removeWidget(_arcSinButton);
+    _gridLayout->removeWidget(_arcTanButton);
+    _gridLayout->removeWidget(_powButton);
+
+    delete _sineButton;
+    delete _cosineButton;
+    delete _tangentButton;
+    delete _squareRoot;
+    delete _basicCalcButton;
+    delete _arcCosButton;
+    delete _arcSinButton;
+    delete _arcTanButton;
+    delete _powButton;
+
+    _scientificButton = new QPushButton("Sci");
+    QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
+    _gridLayout->addWidget(_scientificButton,5,2,1,1);
+
+    // _basicCalcWindow->setFixedHeight(_height);
+    // _basicCalcWindow->setFixedWidth(_width);
+    // _basicCalcWindow->resize(_calcSize);
+    /* QSize size;
+    size.setHeight(_height);
+    size.setHeight(_width);
+    _basicCalcWindow->resize(size); */
 }
 
 void MyCustomWidget::sineButtonClicked() {
@@ -402,4 +485,23 @@ void MyCustomWidget::tangentButtonClicked() {
 void MyCustomWidget::squareRootButtonClicked() {
     _concatenateNumbersOperations("√");
     _concatenateNumbersOperations("(");
+}
+
+void MyCustomWidget::arcSineButtonClicked() {
+    _concatenateNumbersOperations("sin-1");
+    _concatenateNumbersOperations("(");
+}
+
+void MyCustomWidget::arcCosineButtonClicked() {
+    _concatenateNumbersOperations("cos-1");
+    _concatenateNumbersOperations("(");
+}
+
+void MyCustomWidget::arcTangentButtonClicked() {
+    _concatenateNumbersOperations("tan-1");
+    _concatenateNumbersOperations("(");
+}
+
+void MyCustomWidget::powButtonClicked() {
+    _concatenateNumbersOperations("^");
 }
