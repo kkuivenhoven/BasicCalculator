@@ -91,10 +91,13 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 
     _basicCalcWindow->setLayout(_gridLayout);
     _basicCalcWindow->show();
-    _calcSize = _basicCalcWindow->size();
-    _height = _calcSize.height();
-    _width = _calcSize.width();
-    _firstSciCallOccurred = false;
+
+    _height = _basicCalcWindow->height();
+    _width = _basicCalcWindow->width();
+    _basicCalcWindow->setMinimumHeight(_height);
+    _basicCalcWindow->setMinimumWidth(_width);
+    _basicCalcWindow->setMaximumHeight(_height + 122);
+    _basicCalcWindow->setMaximumWidth(_width);
 }
 
 void MyCustomWidget::leftParenBtnClicked() {
@@ -451,19 +454,24 @@ void MyCustomWidget::scientificButtonClicked() {
     _basicCalcButton = new QPushButton("Basic");
     _gridLayout->addWidget(_basicCalcButton,5,2,1,1);
     QObject::connect(_basicCalcButton, SIGNAL(clicked(bool)), this, SLOT(returnToBasicCalcClicked()));
-    /* if(_firstSciCallOccurred == false) {
-        _sciHeight = _basicCalcWindow->height();
-        _sciWidth = _basicCalcWindow->width();
-        _basicCalcWindow->setFixedHeight(_sciHeight);
-        _basicCalcWindow->setFixedWidth(_sciWidth);
-        _firstSciCallOccurred = true;
-    }
-    if(_firstSciCallOccurred == true) {
+
+    _basicCalcWindow->resize(_width, (_height + 122));
+    // _basicCalcWindow->resize(500, 500);
+    // if(_firstSciCallOccurred == false) {
+        // _firstSciCallOccurred = true;
+        // _sciHeight = (_height + 122);
+        // _basicCalcWindow->setFixedHeight(_sciHeight);
+        // _sciWidth = _basicCalcWindow->width();
+        // _sciHeight = _basicCalcWindow->height();
+        // _sciWidth = _basicCalcWindow->width();
+        // _basicCalcWindow->setFixedWidth(_sciWidth);
+    // }
+    // if(_firstSciCallOccurred == true) {
+        // _basicCalcWindow->setFixedHeight(_height);
         // _basicCalcWindow->setFixedHeight(_sciHeight);
         // _basicCalcWindow->setFixedWidth(_sciWidth);
-        // _basicCalcWindow->height(_sciHeight);
         // _basicCalcWindow->setFixedWidth(_sciWidth);
-    } */
+    // }
 }
 
 void MyCustomWidget::returnToBasicCalcClicked() {
@@ -478,6 +486,8 @@ void MyCustomWidget::returnToBasicCalcClicked() {
     _gridLayout->removeWidget(_powButton);
     _gridLayout->removeWidget(_eRaisedToXButton);
     _gridLayout->removeWidget(_logBaseEButton);
+    _gridLayout->removeWidget(_piButton);
+    _gridLayout->removeWidget(_eByItselfButton);
 
     delete _sineButton;
     delete _cosineButton;
@@ -490,18 +500,14 @@ void MyCustomWidget::returnToBasicCalcClicked() {
     delete _powButton;
     delete _eRaisedToXButton;
     delete _logBaseEButton;
+    delete _piButton;
+    delete _eByItselfButton;
 
     _scientificButton = new QPushButton("Sci");
     QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
     _gridLayout->addWidget(_scientificButton,5,2,1,1);
 
-    // _basicCalcWindow->setFixedHeight(_height);
-    // _basicCalcWindow->setFixedWidth(_width);
-    // _basicCalcWindow->resize(_calcSize);
-    /* QSize size;
-    size.setHeight(_height);
-    size.setHeight(_width);
-    _basicCalcWindow->resize(size); */
+    _basicCalcWindow->resize(_width, _height);
 }
 
 void MyCustomWidget::sineButtonClicked() {
