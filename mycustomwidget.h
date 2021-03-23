@@ -51,6 +51,10 @@ class MyCustomWidget : public QWidget
     QPushButton *_arcCosButton;
     QPushButton *_arcTanButton;
     QPushButton *_powButton;
+    QPushButton *_eRaisedToXButton;
+    QPushButton *_logBaseEButton;
+    QPushButton *_piButton;
+    QPushButton *_eByItselfButton;
     // https://stackoverflow.com/questions/20382050/how-to-insert-specific-symbols-in-qt-widgets
     // const QChar _squareRootSymbol(0x221A);
 
@@ -92,6 +96,10 @@ private slots:
     void arcCosineButtonClicked();
     void arcTangentButtonClicked();
     void powButtonClicked();
+    void eRaisedToXButtonClicked();
+    void logBaseEButtonClicked();
+    void piButtonClicked();
+    void eByItselfButtonClicked();
 };
 
 #endif // MYCUSTOMWIDGET_H

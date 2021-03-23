@@ -201,7 +201,7 @@ void MyCustomWidget::_addMultipleDigits(QString numOp) {
     while((_stack.top() != "+") && (_stack.top() != "-")
           && (_stack.top() != "*") && (_stack.top() != "/")
           && (_stack.top() != ")") && (_stack.top() != "(")
-          && (_stack.top() != "^")) {
+          && (_stack.top() != "^") && (_stack.top() != "e^")) {
         number += _stack.pop();
         if(_stack.empty()) {
             break;
@@ -272,6 +272,12 @@ QStringList MyCustomWidget::_convertToPostFix(QStringList numberOperands) {
     for(int i = (numberOperands.length()-1); i >= 0; i--) {
         QRegExp rx("([0-9]*[\.]{0,1}[0-9]*)");
         QString numOp = numberOperands.at(i);
+        if(numOp == "π") {
+            postFix.append("3.14159");
+        }
+        if(numOp == "e") {
+            postFix.append("2.718");
+        }
         if(rx.exactMatch(numOp)) {
             postFix.append(numOp);
         }
@@ -291,7 +297,8 @@ QStringList MyCustomWidget::_convertToPostFix(QStringList numberOperands) {
         }
         if((numOp == "+") || (numOp == "-") || (numOp == "/") || (numOp == "*") || (numOp == "sin")
                 || (numOp == "cos") || (numOp == "tan") || (numOp == "√") || (numOp == "sin-1") ||
-                (numOp == "cos-1") || (numOp == "tan-1") || (numOp == "^")) {
+                (numOp == "cos-1") || (numOp == "tan-1") || (numOp == "^") || (numOp == "e^")
+                || (numOp == "loge") || (numOp == "π")) {
             if((stackPostFix.empty()) || (stackPostFix.top() == "(")) {
                 stackPostFix.push(numOp);
             }
@@ -348,7 +355,7 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
         }
         if((numOp == "sin") || (numOp == "cos") || (numOp == "tan") || (numOp == "√") ||
                 (numOp == "sin-1") || (numOp == "cos-1") || (numOp == "tan-1") ||
-                (numOp == "^")) {
+                (numOp == "^") || (numOp == "e^") || (numOp == "loge")) {
             float result;
             float A = evalStack.pop();
             if(numOp == "sin") {
@@ -376,6 +383,12 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
                 float B = evalStack.pop();
                 result = (qPow(B, A));
             }
+            if(numOp == "e^") {
+                result = (qExp(A));
+            }
+            if(numOp == "loge") {
+                result = (qLn(A));
+            }
             evalStack.push(result);
         }
     }
@@ -383,15 +396,26 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
     return finalResult;
 }
 
+// https://en.wikipedia.org/wiki/List_of_Unicode_characters
+
 void MyCustomWidget::scientificButtonClicked() {
+    QString inverse = QChar(0x207b);
+    QString one = QChar(0xb9);
+    QString e = QChar(0x2091);
+    QString x = QChar(0x02E3);
+
     _sineButton = new QPushButton("sin");
     _cosineButton = new QPushButton("cos");
     _tangentButton = new QPushButton("tan");
     _squareRoot = new QPushButton("√");
-    _arcSinButton = new QPushButton("sin -1");
-    _arcCosButton = new QPushButton("cos -1");
-    _arcTanButton = new QPushButton("tan -1");
+    _arcSinButton = new QPushButton("sin" + inverse + one);
+    _arcCosButton = new QPushButton("cos" + inverse + one);
+    _arcTanButton = new QPushButton("tan" + inverse + one);
     _powButton = new QPushButton("^");
+    _eRaisedToXButton = new QPushButton("e" + x);
+    _logBaseEButton = new QPushButton("log" + e);
+    _piButton = new QPushButton("π");
+    _eByItselfButton = new QPushButton("e");
 
     _gridLayout->addWidget(_sineButton,6,0,1,1);
     _gridLayout->addWidget(_cosineButton,6,1,1,1);
@@ -411,6 +435,15 @@ void MyCustomWidget::scientificButtonClicked() {
     QObject::connect(_arcCosButton, SIGNAL(clicked(bool)), this, SLOT(arcCosineButtonClicked()));
     QObject::connect(_arcTanButton, SIGNAL(clicked(bool)), this, SLOT(arcTangentButtonClicked()));
     QObject::connect(_powButton, SIGNAL(clicked(bool)), this, SLOT(powButtonClicked()));
+
+    _gridLayout->addWidget(_eRaisedToXButton, 8, 0, 1, 1);
+    _gridLayout->addWidget(_logBaseEButton, 8, 1, 1, 1);
+    _gridLayout->addWidget(_piButton, 8, 2, 1, 1);
+    _gridLayout->addWidget(_eByItselfButton, 8, 3, 1, 1);
+    QObject::connect(_eRaisedToXButton, SIGNAL(clicked(bool)), this, SLOT(eRaisedToXButtonClicked()));
+    QObject::connect(_logBaseEButton, SIGNAL(clicked(bool)), this, SLOT(logBaseEButtonClicked()));
+    QObject::connect(_piButton, SIGNAL(clicked(bool)), this, SLOT(piButtonClicked()));
+    QObject::connect(_eByItselfButton, SIGNAL(clicked(bool)), this, SLOT(eByItselfButtonClicked()));
 
     _gridLayout->removeWidget(_scientificButton);
     delete _scientificButton;
@@ -443,6 +476,8 @@ void MyCustomWidget::returnToBasicCalcClicked() {
     _gridLayout->removeWidget(_arcSinButton);
     _gridLayout->removeWidget(_arcTanButton);
     _gridLayout->removeWidget(_powButton);
+    _gridLayout->removeWidget(_eRaisedToXButton);
+    _gridLayout->removeWidget(_logBaseEButton);
 
     delete _sineButton;
     delete _cosineButton;
@@ -453,6 +488,8 @@ void MyCustomWidget::returnToBasicCalcClicked() {
     delete _arcSinButton;
     delete _arcTanButton;
     delete _powButton;
+    delete _eRaisedToXButton;
+    delete _logBaseEButton;
 
     _scientificButton = new QPushButton("Sci");
     QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
@@ -504,4 +541,21 @@ void MyCustomWidget::arcTangentButtonClicked() {
 
 void MyCustomWidget::powButtonClicked() {
     _concatenateNumbersOperations("^");
+}
+
+void MyCustomWidget::eRaisedToXButtonClicked() {
+    _concatenateNumbersOperations("e^");
+}
+
+void MyCustomWidget::logBaseEButtonClicked() {
+    _concatenateNumbersOperations("loge");
+    _concatenateNumbersOperations("(");
+}
+
+void MyCustomWidget::piButtonClicked() {
+    _concatenateNumbersOperations("π");
+}
+
+void MyCustomWidget::eByItselfButtonClicked() {
+    _concatenateNumbersOperations("e");
 }
