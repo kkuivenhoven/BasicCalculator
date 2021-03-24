@@ -16,6 +16,8 @@
 #include <QtMath>
 #include <QChar>
 #include <QDebug>
+#include <QPalette>
+#include <QColor>
 
 class MyCustomWidget : public QWidget
 {
@@ -60,10 +62,17 @@ class MyCustomWidget : public QWidget
 
     QSize _calcSize;
 
+    void _setBtnColor(QPushButton *currentBtn, QColor btnColor);
+    QColor _btnColor;
+
+    void _workingWithNegativeSign(QString number);
+
 public:
     MyCustomWidget(QWidget *parent = 0);
 
 private slots:
+    void negativeButtonClicked();
+
     void plusButtonClicked();
     void minusButtonClicked();
     void divideButtonClicked();
