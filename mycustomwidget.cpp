@@ -14,6 +14,7 @@
 MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
     _basicCalcWindow = new QWidget();
     _basicCalcWindow->setWindowTitle("Basic Calculator");
+    _basicCalcWindow->setStyleSheet("QLineEdit { color: yellow; }");
 
     /* QColor backgroundColor;
     backgroundColor.setRgb(255,219,120);
@@ -30,11 +31,10 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 
     _gridLayout = new QGridLayout();
 
-    // QPushButton *percentButton = new QPushButton("%");
     _scientificButton = new QPushButton("Sci");
     QPushButton *clearButton = new QPushButton("Clear");
-    // _setBtnColor(percentButton, _btnColor);
-    // _setBtnColor(negativeButton, _btnColor);
+    _setBtnColor(percentButton, _btnColor);
+    _setBtnColor(negativeButton, _btnColor);
     _setBtnColor(clearButton, _btnColor);
     _setBtnColor(_scientificButton, _btnColor);
 
@@ -145,6 +145,7 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void MyCustomWidget::_setBtnColor(QPushButton *currentBtn, QColor btnColor){
+    // Currently commented out because decided a color scheme is not necessary
     /* QPalette btnPal = currentBtn->palette();
     btnPal.setColor(QPalette::Button, btnColor);
     currentBtn->setAutoFillBackground(true);
