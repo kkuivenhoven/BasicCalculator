@@ -1,5 +1,6 @@
 #include "mycustomwidget.h"
 
+// Resources that helped me:
 // https://www.programmersought.com/article/64106095402/
 // https://falsinsoft.blogspot.com/2014/06/qt-get-click-event-from-button-inside.html
 // https://www.bogotobogo.com/Qt/Qt5_GridLayout.php
@@ -12,28 +13,28 @@
 
 MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
     _basicCalcWindow = new QWidget();
+    _basicCalcWindow->setWindowTitle("Basic Calculator");
 
-    QColor backgroundColor;
+    /* QColor backgroundColor;
     backgroundColor.setRgb(255,219,120);
     // _btnColor.setRgb(252,232,174);
-    _btnColor.setRgb(37,13,252);
+    _btnColor.setRgb(37,13,252);*/
 
-    QPalette pal = palette();
+    /* QPalette pal = palette();
     pal.setColor(QPalette::Background, backgroundColor);
     _basicCalcWindow->setAutoFillBackground(true);
-    _basicCalcWindow->setPalette(pal);
+    _basicCalcWindow->setPalette(pal); */
 
     _lineEdit = new QLineEdit();
     _lineEdit->setDisabled(true);
 
     _gridLayout = new QGridLayout();
 
-    QPushButton *percentButton = new QPushButton("%");
-    QPushButton *negativeButton = new QPushButton("(-)");
+    // QPushButton *percentButton = new QPushButton("%");
     _scientificButton = new QPushButton("Sci");
     QPushButton *clearButton = new QPushButton("Clear");
-    _setBtnColor(percentButton, _btnColor);
-    _setBtnColor(negativeButton, _btnColor);
+    // _setBtnColor(percentButton, _btnColor);
+    // _setBtnColor(negativeButton, _btnColor);
     _setBtnColor(clearButton, _btnColor);
     _setBtnColor(_scientificButton, _btnColor);
 
@@ -73,6 +74,7 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
     _setBtnColor(zeroButton, _btnColor);
     _setBtnColor(multiplyButton, _btnColor);
 
+    QPushButton *negativeButton = new QPushButton("(-)");
     QPushButton *decimalButton = new QPushButton(".");
     QPushButton *equalButton = new QPushButton("=");
     _setBtnColor(decimalButton, _btnColor);
@@ -80,11 +82,10 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 
     _gridLayout->addWidget(_lineEdit,0,0,1,4);
 
-    _gridLayout->addWidget(percentButton,1,0,1,1);
-    _gridLayout->addWidget(negativeButton,1,1,1,1);
-    _gridLayout->addWidget(clearButton,1,2,1,1);
-    _gridLayout->addWidget(_scientificButton,1,3,1,1);
-    QObject::connect(negativeButton, SIGNAL(clicked(bool)), this, SLOT(negativeButtonClicked()));
+    // _gridLayout->addWidget(percentButton,1,0,1,1);
+    // _gridLayout->addWidget(negativeButton,1,1,1,1);
+    _gridLayout->addWidget(clearButton,1,0,1,2);
+    _gridLayout->addWidget(_scientificButton,1,2,1,2);
     QObject::connect(clearButton, SIGNAL(clicked(bool)), this, SLOT(clearButtonClicked()));
     QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
 
@@ -125,8 +126,10 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
     QObject::connect(zeroButton, SIGNAL(clicked(bool)), this, SLOT(zeroButtonClicked()));
     QObject::connect(multiplyButton, SIGNAL(clicked(bool)), this, SLOT(multiplyButtonClicked()));
 
+    _gridLayout->addWidget(negativeButton,6,0,1,1);
     _gridLayout->addWidget(decimalButton,6,1,1,1);
-    _gridLayout->addWidget(equalButton,6,3,1,1);
+    _gridLayout->addWidget(equalButton,6,2,1,2);
+    QObject::connect(negativeButton, SIGNAL(clicked(bool)), this, SLOT(negativeButtonClicked()));
     QObject::connect(decimalButton, SIGNAL(clicked(bool)), this, SLOT(decimalButtonClicked()));
     QObject::connect(equalButton, SIGNAL(clicked(bool)), this, SLOT(equalButtonClicked()));
 
@@ -142,10 +145,10 @@ MyCustomWidget::MyCustomWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void MyCustomWidget::_setBtnColor(QPushButton *currentBtn, QColor btnColor){
-    QPalette btnPal = currentBtn->palette();
+    /* QPalette btnPal = currentBtn->palette();
     btnPal.setColor(QPalette::Button, btnColor);
     currentBtn->setAutoFillBackground(true);
-    currentBtn->setPalette(btnPal);
+    currentBtn->setPalette(btnPal); */
 }
 
 void MyCustomWidget::negativeButtonClicked() {
@@ -516,6 +519,8 @@ float MyCustomWidget::_evaluatePostFix(QStringList expression) {
 
 
 void MyCustomWidget::scientificButtonClicked() {
+    _basicCalcWindow->setWindowTitle("Scientific Calculator");
+
     QString inverse = QChar(0x207b);
     QString one = QChar(0xb9);
     QString e = QChar(0x2091);
@@ -579,7 +584,7 @@ void MyCustomWidget::scientificButtonClicked() {
     delete _scientificButton;
 
     _basicCalcButton = new QPushButton("Basic");
-    _gridLayout->addWidget(_basicCalcButton,1,3,1,1);
+    _gridLayout->addWidget(_basicCalcButton,1,2,1,2);
     QObject::connect(_basicCalcButton, SIGNAL(clicked(bool)), this, SLOT(returnToBasicCalcClicked()));
     _setBtnColor(_basicCalcButton, _btnColor);
 
@@ -618,9 +623,10 @@ void MyCustomWidget::returnToBasicCalcClicked() {
     _scientificButton = new QPushButton("Sci");
     _setBtnColor(_scientificButton, _btnColor);
     QObject::connect(_scientificButton, SIGNAL(clicked(bool)), this, SLOT(scientificButtonClicked()));
-    _gridLayout->addWidget(_scientificButton,1,3,1,1);
+    _gridLayout->addWidget(_scientificButton,1,2,1,2);
 
     _basicCalcWindow->resize(_width, _height);
+    _basicCalcWindow->setWindowTitle("Basic Calculator");
 }
 
 void MyCustomWidget::sineButtonClicked() {
