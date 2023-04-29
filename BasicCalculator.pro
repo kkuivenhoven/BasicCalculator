@@ -6,6 +6,8 @@
 
 QT       += core gui
 
+# CONFIG += console qml_debug
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = BasicCalculator

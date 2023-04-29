@@ -15,6 +15,9 @@
 #include <QRegExp>
 #include <QtMath>
 #include <QChar>
+#include <QDebug>
+#include <QPalette>
+#include <QColor>
 
 class MyCustomWidget : public QWidget
 {
@@ -29,11 +32,47 @@ class MyCustomWidget : public QWidget
     float _evaluatePostFix(QStringList expression);
     void _concatenateNumbersOperations(QString operationOrNumber);
     void _addMultipleDigits(QString numOp);
+    int _height;
+    int _width;
+    int _sciHeight;
+    int _sciWidth;
+    bool _firstSciCallOccurred;
+
+    QWidget *_basicCalcWindow;
+    QWidget *_scientificCalc;
+    QGridLayout *_gridLayout;
+
+    QPushButton *_basicCalcButton;
+    QPushButton *_scientificButton;
+    QPushButton *_sineButton;
+    QPushButton *_cosineButton;
+    QPushButton *_tangentButton;
+    QPushButton *_squareRoot;
+
+    QPushButton *_arcSinButton;
+    QPushButton *_arcCosButton;
+    QPushButton *_arcTanButton;
+    QPushButton *_powButton;
+    QPushButton *_eRaisedToXButton;
+    QPushButton *_logBaseEButton;
+    QPushButton *_piButton;
+    QPushButton *_eByItselfButton;
+    // https://stackoverflow.com/questions/20382050/how-to-insert-specific-symbols-in-qt-widgets
+    // const QChar _squareRootSymbol(0x221A);
+
+    QSize _calcSize;
+
+    void _setBtnColor(QPushButton *currentBtn, QColor btnColor);
+    QColor _btnColor;
+
+    void _workingWithNegativeSign(QString number);
 
 public:
     MyCustomWidget(QWidget *parent = 0);
 
 private slots:
+    void negativeButtonClicked();
+
     void plusButtonClicked();
     void minusButtonClicked();
     void divideButtonClicked();
@@ -54,6 +93,22 @@ private slots:
     void eightButtonClicked();
     void nineButtonClicked();
     void zeroButtonClicked();
+
+    void returnToBasicCalcClicked();
+    void scientificButtonClicked();
+    void sineButtonClicked();
+    void cosineButtonClicked();
+    void tangentButtonClicked();
+    void squareRootButtonClicked();
+
+    void arcSineButtonClicked();
+    void arcCosineButtonClicked();
+    void arcTangentButtonClicked();
+    void powButtonClicked();
+    void eRaisedToXButtonClicked();
+    void logBaseEButtonClicked();
+    void piButtonClicked();
+    void eByItselfButtonClicked();
 };
 
 #endif // MYCUSTOMWIDGET_H
